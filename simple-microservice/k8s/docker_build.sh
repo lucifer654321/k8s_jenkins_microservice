@@ -13,6 +13,7 @@ docker_registry_secret_name="registry-pull-secret"
 project_namespace="ms"
 
 # Create docker-registry secret
+kubectl create ns $project_namespace
 kubectl create secret docker-registry $docker_registry_secret_name \
 	--docker-server=$docker_registry \
 	--docker-username=$Harbor_User \
@@ -27,6 +28,9 @@ current_dir=$PWD
 # Package for java
 cd $work_dir
 mvn clean package -Dmaven.test.skip=true
+
+docker login -u $Harbor_User -p $Harbor_Pass $docker_registry
+[ $? == 0 ] || exit
 
 # Build the Docker images and push to Harbor, and apply in k8s
 for service in $service_list; do
